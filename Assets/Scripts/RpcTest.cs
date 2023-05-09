@@ -16,7 +16,7 @@ public class RpcTest : NetworkBehaviour
 	[ClientRpc]
 	void TestClientRpc(int value, ulong sourceNetworkObjectId)
 	{
-		Debug.Log($"El Cliente recibe el RPC #{value} en NetworkObject #{sourceNetworkObjectId}");
+		// Debug.Log($"El Cliente recibe el RPC #{value} en NetworkObject #{sourceNetworkObjectId}");
 
 		// Sólo se envía un RPC al servidor en el cliente que posee el NetworkObject 
 		// que posee esta instancia de NetworkBehaviour
@@ -29,7 +29,7 @@ public class RpcTest : NetworkBehaviour
 	[ServerRpc]
 	void TestServerRpc(int value, ulong sourceNetworkObjectId)
 	{
-		Debug.Log($"El Server recibe el RPC #{value} en NetworkObject #{sourceNetworkObjectId}");
+		// Debug.Log($"El Server recibe el RPC #{value} en NetworkObject #{sourceNetworkObjectId}");
 
 		TestClientRpc(value, sourceNetworkObjectId);
 	}
