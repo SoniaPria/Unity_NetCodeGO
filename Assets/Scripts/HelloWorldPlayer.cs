@@ -3,48 +3,74 @@ using UnityEngine;
 
 namespace HelloWorld
 {
-	public class HelloWorldPlayer : NetworkBehaviour
-	{
-		public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
+    public class HelloWorldPlayer : NetworkBehaviour
+    {
+        public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
 
-		public override void OnNetworkSpawn()
-		{
-			if (IsOwner)
-			{
-				Move();
-			}
-		}
+        void Start()
+        {
+            var ngo = GetComponent<NetworkObject>();
+            string uid = ngo.NetworkObjectId.ToString();
 
-		public void Move()
-		{
-			if (NetworkManager.Singleton.IsServer)
-			{
-				var randomPosition = GetRandomPositionOnPlane();
-				transform.position = randomPosition;
-				Position.Value = randomPosition;
+            // Dev
+            if (ngo.IsOwnedByServer)
+            {
+                gameObject.name = $"HostPlayer_{uid}";
+            }
+            else if (ngo.IsOwner)
+            {
+                gameObject.name = $"LocalPlayer_{uid}";
+            }
+            else
+            {
+                gameObject.name = "Net_Player_" + uid;
+            }
 
-				Debug.Log($"HelloWorldPlayer.Move");
-			}
-			else
-			{
-				SubmitPositionRequestServerRpc();
-			}
-		}
+            Debug.Log($"{gameObject.name}.HelloWorldPlayer");
+            Debug.Log($"\t IsLocalPlayer: {ngo.IsLocalPlayer}");
+            Debug.Log($"\t IsOwner: {ngo.IsOwner}");
+            Debug.Log($"\t IsOwnedByServer: {ngo.IsOwnedByServer}");
+            // --- end Dev
+        }
 
-		[ServerRpc]
-		void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default)
-		{
-			Position.Value = GetRandomPositionOnPlane();
-		}
+        public override void OnNetworkSpawn()
+        {
+            if (IsOwner)
+            {
+                Move();
+            }
+        }
 
-		static Vector3 GetRandomPositionOnPlane()
-		{
-			return new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
-		}
+        public void Move()
+        {
+            if (NetworkManager.Singleton.IsServer)
+            {
+                var randomPosition = GetRandomPositionOnPlane();
+                transform.position = randomPosition;
+                Position.Value = randomPosition;
 
-		void Update()
-		{
-			transform.position = Position.Value;
-		}
-	}
+                Debug.Log($"HelloWorldPlayer.Move");
+            }
+            else
+            {
+                SubmitPositionRequestServerRpc();
+            }
+        }
+
+        [ServerRpc]
+        void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default)
+        {
+            Position.Value = GetRandomPositionOnPlane();
+        }
+
+        static Vector3 GetRandomPositionOnPlane()
+        {
+            return new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
+        }
+
+        void Update()
+        {
+            transform.position = Position.Value;
+        }
+    }
 }
