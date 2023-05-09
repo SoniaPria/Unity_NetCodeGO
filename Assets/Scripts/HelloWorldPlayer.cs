@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,8 +9,15 @@ namespace HelloWorld
     {
         public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
 
+        [SerializeField]
+        List<Material> playerColors;
+
+        MeshRenderer mr;
+
         void Start()
         {
+            mr = GetComponent<MeshRenderer>();
+
             var ngo = GetComponent<NetworkObject>();
             string uid = ngo.NetworkObjectId.ToString();
 
@@ -31,6 +40,8 @@ namespace HelloWorld
             Debug.Log($"\t IsOwner: {ngo.IsOwner}");
             Debug.Log($"\t IsOwnedByServer: {ngo.IsOwnedByServer}");
             // --- end Dev
+
+            ChangeColor();
         }
 
         public override void OnNetworkSpawn()
@@ -39,6 +50,18 @@ namespace HelloWorld
             {
                 Move();
             }
+        }
+
+        public void ChangeColor()
+        {
+            int rdm = Random.Range(0, playerColors.Count);
+
+            //if (TakenPlayerColors.Value.Count == playerColors.Count)
+            //if (PlayerColors == null || PlayerColors.Value.Count == 0)
+            // { }
+
+            Debug.Log($"{gameObject.name}.HelloWorldPlayer.ChangeColor");
+            Debug.Log($"\t {playerColors}");
         }
 
         public void Move()
@@ -61,6 +84,12 @@ namespace HelloWorld
         void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default)
         {
             Position.Value = GetRandomPositionOnPlane();
+        }
+
+        [ServerRpc]
+        void SetRandomPlayerColorServerRpc(ServerRpcParams rpcParams = default)
+        {
+            Debug.Log($"{gameObject.name}.HelloWorldPlayer.SetRandomPlayerColorServerRpc");
         }
 
         static Vector3 GetRandomPositionOnPlane()

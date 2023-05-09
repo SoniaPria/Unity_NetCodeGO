@@ -145,6 +145,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Position:
     m_InternalValue: {x: 0, y: 0, z: 0}
+  playerColors:
+  - {fileID: 2100000, guid: 2ea84c8021dfafb4e90402b969ab59b6, type: 2}
+  - {fileID: 2100000, guid: 6dd4f4594bb486bbc854de1099021151, type: 2}
+  - {fileID: 2100000, guid: a6139d99299746b13a47fde8b1a54e3d, type: 2}
+  - {fileID: 2100000, guid: 88a8860e31d3f828cbe1227ef9fd6d4b, type: 2}
+  - {fileID: 2100000, guid: 2bf51fd57fe0f496a8dbd8a0c765482b, type: 2}
+  - {fileID: 2100000, guid: 2f29fd93ce051ed679fa92dc10542308, type: 2}
+  - {fileID: 2100000, guid: 50b0a3983206b9827871d999dc0fa2d5, type: 2}
+  - {fileID: 2100000, guid: f7e955227448b028c9f4a9ff45b3ddb8, type: 2}
+  - {fileID: 2100000, guid: 27f9e90b7ba1f9c65b7121086991db0e, type: 2}
+  - {fileID: 2100000, guid: d5507f6193ecde52cb202516ff4e1d92, type: 2}
+  - {fileID: 2100000, guid: 38f75de651fdef662991611d09c23b3f, type: 2}
+  - {fileID: 2100000, guid: 40e60178b8b59f31cb56cc3b91bbf70f, type: 2}
+  - {fileID: 2100000, guid: e0d32062040d922439193d7b636be595, type: 2}
+  - {fileID: 2100000, guid: 0c89d3ab6d379466ba336c110ea23a5c, type: 2}
+  - {fileID: 2100000, guid: 2353292665e17709c98b65cc7636875a, type: 2}
+  - {fileID: 2100000, guid: 860119af7e1d32737a87a90c98c2b165, type: 2}
+  - {fileID: 2100000, guid: d006939fdd687f6db9592dc99248dbf9, type: 2}
+  - {fileID: 2100000, guid: 4d518ca8d19b3df6cb4b44ce605dc4fa, type: 2}
+  - {fileID: 2100000, guid: 85911837903d22496beca615b97b0c51, type: 2}
 --- !u!114 &-1738437778664091986
 MonoBehaviour:
   m_ObjectHideFlags: 0
