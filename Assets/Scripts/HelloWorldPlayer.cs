@@ -64,7 +64,7 @@ namespace HelloWorld
 
 			Vector3 direction;
 
-			Debug.Log($"{gameObject.name}.HelloWorldPlayer.MoveOnRequest({key})");
+			// Debug.Log($"{gameObject.name}.HelloWorldPlayer.MoveOnRequest({key})");
 
 			switch (key)
 			{
@@ -87,18 +87,18 @@ namespace HelloWorld
 				default:
 					direction = Vector3.zero;
 
-					Debug.Log($"\t A tecla pulsada non é valida para mover");
+					// Debug.Log($"\t A tecla pulsada non é valida para mover");
 					break;
 			}
 
-			Debug.Log($"\t New direction: {direction}");
+			// Debug.Log($"\t New direction: {direction}");
 
 			if (NetworkManager.Singleton.IsServer)
 			{
 				// Actualizamos a posición na variable de rede
 				Position.Value += direction;
 
-				Debug.Log($"\t new.position: {Position.Value}");
+				// Debug.Log($"\t new.position: {Position.Value}");
 			}
 			else
 			{
@@ -111,8 +111,8 @@ namespace HelloWorld
 		{
 			Position.Value += direction;
 
-			Debug.Log($"{gameObject.name}.HelloWorldPlayer.SubmitToPositionRequestServerRpc({direction})");
-			Debug.Log($"\t new.position: {Position.Value}");
+			// Debug.Log($"{gameObject.name}.HelloWorldPlayer.SubmitToPositionRequestServerRpc({direction})");
+			// Debug.Log($"\t new.position: {Position.Value}");
 		}
 
 
@@ -131,32 +131,32 @@ namespace HelloWorld
 		{
 			if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
 			{
-				Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
-				Debug.Log($"\t Input W | Input Up arrow");
+				// Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
+				// Debug.Log($"\t Input W | Input Up arrow");
 
 				MoveOnRequest(1);
 			}
 
 			if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
 			{
-				Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
-				Debug.Log($"\t Input D | Input Right arrow");
+				// Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
+				// Debug.Log($"\t Input D | Input Right arrow");
 
 				MoveOnRequest(2);
 			}
 
 			if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
 			{
-				Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
-				Debug.Log($"\t Input S | Input Down arrow");
+				// Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
+				// Debug.Log($"\t Input S | Input Down arrow");
 
 				MoveOnRequest(3);
 			}
 
 			if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
 			{
-				Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
-				Debug.Log($"\t Input A | Input Left arrow");
+				// Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
+				// Debug.Log($"\t Input A | Input Left arrow");
 
 				MoveOnRequest(4);
 			}
