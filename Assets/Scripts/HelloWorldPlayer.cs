@@ -7,6 +7,32 @@ namespace HelloWorld
 	{
 		public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
 
+		void Start()
+		{
+			var ngo = GetComponent<NetworkObject>();
+			string uid = ngo.NetworkObjectId.ToString();
+
+			// Dev
+			if (ngo.IsOwnedByServer)
+			{
+				gameObject.name = $"HostPlayer_{uid}";
+			}
+			else if (ngo.IsOwner)
+			{
+				gameObject.name = $"LocalPlayer_{uid}";
+			}
+			else
+			{
+				gameObject.name = "Net_Player_" + uid;
+			}
+
+			Debug.Log($"{gameObject.name}.HelloWorldPlayer");
+			Debug.Log($"\t IsLocalPlayer: {ngo.IsLocalPlayer}");
+			Debug.Log($"\t IsOwner: {ngo.IsOwner}");
+			Debug.Log($"\t IsOwnedByServer: {ngo.IsOwnedByServer}");
+			// --- end Dev
+		}
+
 		public override void OnNetworkSpawn()
 		{
 			if (IsOwner)
