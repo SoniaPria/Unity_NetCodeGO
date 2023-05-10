@@ -17,12 +17,10 @@ namespace HelloWorld
 
 		void Start()
 		{
-			mr = GetComponent<MeshRenderer>();
-
+			// Dev
 			var ngo = GetComponent<NetworkObject>();
 			string uid = ngo.NetworkObjectId.ToString();
 
-			// Dev
 			if (ngo.IsOwnedByServer)
 			{
 				gameObject.name = $"HostPlayer_{uid}";
@@ -41,37 +39,55 @@ namespace HelloWorld
 			Debug.Log($"\t IsOwner: {ngo.IsOwner}");
 			Debug.Log($"\t IsOwnedByServer: {ngo.IsOwnedByServer}");
 			// --- end Dev
-
+			mr = GetComponent<MeshRenderer>();
+			ChangeColor();
 		}
 
+
+		// Método de instanciado de players
 		public override void OnNetworkSpawn()
 		{
 			if (IsOwner)
 			{
 				Move();
-				ChangeColor();
 			}
 		}
 
 		public void ChangeColor()
 		{
-			int rdm = Random.Range(0, playerColors.Count);
+			Debug.Log($"{gameObject.name}.HelloWorldPlayer.ChangeColor");
+
+			List<int> playerColorsFree = new List<int>();
+
+			for (int i = 0; i < playerColors.Count; i++)
+			{
+				playerColorsFree.Add(i);
+			}
+			// Debug.Log($"\t playerColors: {playerColorsFree}");
+
+
+			int takenColor;
+			foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
+			{
+				takenColor = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid).GetComponent<HelloWorldPlayer>().PlayerColor.Value;
+
+				playerColorsFree.Remove(takenColor);
+			}
+
+			// Debug.Log($"\t playerColorsFree: {playerColorsFree}");
+
+
+			int rdmColor = Random.Range(0, playerColorsFree.Count);
 
 			if (NetworkManager.Singleton.IsServer)
 			{
-				PlayerColor.Value = rdm;
+				PlayerColor.Value = playerColorsFree[rdmColor];
+				Debug.Log($"\t PlayerColor: {PlayerColor.Value}");
 			}
 			else
 			{
-				SubmitPlayerColorServerRpc(rdm);
+				SubmitPlayerColorServerRpc(playerColorsFree[rdmColor]);
 			}
-
-			//if (TakenPlayerColors.Value.Count == playerColors.Count)
-			//if (PlayerColors == null || PlayerColors.Value.Count == 0)
-			// { }
-
-			Debug.Log($"{gameObject.name}.HelloWorldPlayer.ChangeColor");
-			Debug.Log($"\t {playerColors}");
 		}
 
 		public void Move()
@@ -102,6 +118,7 @@ namespace HelloWorld
 			PlayerColor.Value = color;
 
 			Debug.Log($"{gameObject.name}.HelloWorldPlayer.SubmitPlayerColorServerRpc");
+			Debug.Log($"\t PlayerColor: {PlayerColor.Value}");
 		}
 
 		static Vector3 GetRandomPositionOnPlane()
