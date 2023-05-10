@@ -21,7 +21,21 @@ namespace HelloWorld
 
         MeshRenderer mr;
 
-        void Start()
+        void Start() { }
+
+        // Método de instanciado de players
+        public override void OnNetworkSpawn()
+        {
+            InitValues();
+
+            if (IsOwner)
+            {
+                Move();
+                ChangeColor();
+            }
+        }
+
+        void InitValues()
         {
             // Dev
             var ngo = GetComponent<NetworkObject>();
@@ -56,42 +70,29 @@ namespace HelloWorld
             }
         }
 
-        // Método de instanciado de players
-        public override void OnNetworkSpawn()
-        {
-            if (IsOwner)
-            {
-                Move();
-                ChangeColor();
-            }
-        }
-
         public void ChangeColor()
         {
+            Debug.Log($"{gameObject.name}.HelloWorldPlayer.ChangeColor");
+
             if (NetworkManager.Singleton.IsServer)
             {
-                Debug.Log($"{gameObject.name}.HelloWorldPlayer.ChangeColor");
-
                 // Asignación de color no PlayerHost
                 int rdmColor = GetRandomColor();
                 PlayerColor.Value = playerColorsFree[rdmColor];
-                Debug.Log($"\t PlayerColor: {PlayerColor.Value}");
             }
             else
             {
                 SubmitPlayerColorServerRpc();
             }
+
+            Debug.Log($"\t PlayerColor: {PlayerColor.Value}");
         }
 
         [ServerRpc]
         void SubmitPlayerColorServerRpc(ServerRpcParams rpcParams = default)
         {
-            Debug.Log($"{gameObject.name}.HelloWorldPlayer.SubmitPlayerColorServerRpc");
-
             int rdmColor = GetRandomColor();
             PlayerColor.Value = playerColorsFree[rdmColor];
-
-            Debug.Log($"\t PlayerColor: {PlayerColor.Value}");
         }
 
         int GetRandomColor()
@@ -118,13 +119,13 @@ namespace HelloWorld
 
         public void Move()
         {
+            Debug.Log($"{gameObject.name}.HelloWorldPlayer.Move");
+
             if (NetworkManager.Singleton.IsServer)
             {
                 var randomPosition = GetRandomPositionOnPlane();
                 transform.position = randomPosition;
                 Position.Value = randomPosition;
-
-                Debug.Log($"HelloWorldPlayer.Move");
             }
             else
             {

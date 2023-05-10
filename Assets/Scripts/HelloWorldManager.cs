@@ -15,7 +15,6 @@ namespace HelloWorld
             else
             {
                 StatusLabels();
-
                 SubmitNewPosition();
                 SubmitNewColor();
             }
@@ -58,7 +57,7 @@ namespace HelloWorld
             {
                 if (NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient)
                 {
-                    Debug.Log($"HelloWorldManager.SubmitNewPosition IsServer");
+                    // Debug.Log($"HelloWorldManager.SubmitNewPosition IsServer");
                     foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
                     {
                         NetworkManager.Singleton.SpawnManager
@@ -69,8 +68,7 @@ namespace HelloWorld
                 }
                 else
                 {
-                    Debug.Log($"HelloWorldManager.SubmitNewPosition IsClient");
-
+                    // Debug.Log($"HelloWorldManager.SubmitNewPosition IsClient");
                     var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
                     var player = playerObject.GetComponent<HelloWorldPlayer>();
                     player.Move();
@@ -88,8 +86,7 @@ namespace HelloWorld
             {
                 if (NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient)
                 {
-                    Debug.Log($"HelloWorldManager.SubmitNewColor IsServer");
-
+                    // Debug.Log($"HelloWorldManager.SubmitNewColor IsServer");
                     foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
                     {
                         NetworkManager.Singleton.SpawnManager
@@ -100,8 +97,7 @@ namespace HelloWorld
                 }
                 else
                 {
-                    Debug.Log($"HelloWorldManager.SubmitNewColor IsClient");
-
+                    // Debug.Log($"HelloWorldManager.SubmitNewColor IsClient");
                     var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
                     var player = playerObject.GetComponent<HelloWorldPlayer>();
                     player.ChangeColor();
