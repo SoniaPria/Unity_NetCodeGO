@@ -9,21 +9,20 @@ namespace HelloWorld
     {
         public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
 
-        // Variable de red para guardar color de cada player
+        // Variable de rede para gardar o índice de color de cada net player
         public NetworkVariable<int> PlayerColor;
 
+        // Lista de colores
         [SerializeField]
         List<Material> playerColors;
 
+        // Lista de colores dispoñibles
         List<int> playerColorsFree;
-
-        //int rdmColor;
 
         MeshRenderer mr;
 
-        void Start() { }
-
         // Método de instanciado de players
+        // Orden de execución: Awake do Server, OnNetworkSpanw, Awake do Client, Start ...
         public override void OnNetworkSpawn()
         {
             InitValues();
@@ -34,6 +33,8 @@ namespace HelloWorld
                 ChangeColor();
             }
         }
+
+        void Start() { }
 
         void InitValues()
         {
@@ -76,9 +77,7 @@ namespace HelloWorld
 
             if (NetworkManager.Singleton.IsServer)
             {
-                // Asignación de color no PlayerHost
-                int rdmColor = GetRandomColor();
-                PlayerColor.Value = playerColorsFree[rdmColor];
+                SetRandomColor();
             }
             else
             {
@@ -91,30 +90,36 @@ namespace HelloWorld
         [ServerRpc]
         void SubmitPlayerColorServerRpc(ServerRpcParams rpcParams = default)
         {
-            int rdmColor = GetRandomColor();
-            PlayerColor.Value = playerColorsFree[rdmColor];
+            SetRandomColor();
         }
 
-        int GetRandomColor()
+        void SetRandomColor()
         {
+            Debug.Log($"{gameObject.name}.HelloWorldPlayer.SetRandomColor");
+
             // Eliminando colores existentes da lista de índices de colores libres
             int takenColor = 0;
+
+            // Percorrendo os Players conectados
             foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
             {
+                // Capturando o índice de color asignado
                 takenColor = NetworkManager.Singleton.SpawnManager
                     .GetPlayerNetworkObject(uid)
                     .GetComponent<HelloWorldPlayer>()
                     .PlayerColor.Value;
 
+                // Eliminando color asignado da lista de cores libres
                 playerColorsFree.Remove(takenColor);
 
                 Debug.Log($"\t Eliminado color: {takenColor} como disponible");
             }
 
-            // Color aleatorio da lista de disponibles
+            // Índice de cor aleatorio da lista de disponibles
             int rdmColor = Random.Range(0, playerColorsFree.Count);
 
-            return rdmColor;
+            // Asignar a nova cor
+            PlayerColor.Value = playerColorsFree[rdmColor];
         }
 
         public void Move()
