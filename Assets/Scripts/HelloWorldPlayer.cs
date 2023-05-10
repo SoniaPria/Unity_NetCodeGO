@@ -5,101 +5,114 @@ using UnityEngine;
 
 namespace HelloWorld
 {
-    public class HelloWorldPlayer : NetworkBehaviour
-    {
-        public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
+	public class HelloWorldPlayer : NetworkBehaviour
+	{
+		public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
+		public NetworkVariable<int> PlayerColor;
 
-        [SerializeField]
-        List<Material> playerColors;
+		[SerializeField]
+		List<Material> playerColors;
 
-        MeshRenderer mr;
+		MeshRenderer mr;
 
-        void Start()
-        {
-            mr = GetComponent<MeshRenderer>();
+		void Start()
+		{
+			mr = GetComponent<MeshRenderer>();
 
-            var ngo = GetComponent<NetworkObject>();
-            string uid = ngo.NetworkObjectId.ToString();
+			var ngo = GetComponent<NetworkObject>();
+			string uid = ngo.NetworkObjectId.ToString();
 
-            // Dev
-            if (ngo.IsOwnedByServer)
-            {
-                gameObject.name = $"HostPlayer_{uid}";
-            }
-            else if (ngo.IsOwner)
-            {
-                gameObject.name = $"LocalPlayer_{uid}";
-            }
-            else
-            {
-                gameObject.name = "Net_Player_" + uid;
-            }
+			// Dev
+			if (ngo.IsOwnedByServer)
+			{
+				gameObject.name = $"HostPlayer_{uid}";
+			}
+			else if (ngo.IsOwner)
+			{
+				gameObject.name = $"LocalPlayer_{uid}";
+			}
+			else
+			{
+				gameObject.name = "Net_Player_" + uid;
+			}
 
-            Debug.Log($"{gameObject.name}.HelloWorldPlayer");
-            Debug.Log($"\t IsLocalPlayer: {ngo.IsLocalPlayer}");
-            Debug.Log($"\t IsOwner: {ngo.IsOwner}");
-            Debug.Log($"\t IsOwnedByServer: {ngo.IsOwnedByServer}");
-            // --- end Dev
+			Debug.Log($"{gameObject.name}.HelloWorldPlayer");
+			Debug.Log($"\t IsLocalPlayer: {ngo.IsLocalPlayer}");
+			Debug.Log($"\t IsOwner: {ngo.IsOwner}");
+			Debug.Log($"\t IsOwnedByServer: {ngo.IsOwnedByServer}");
+			// --- end Dev
 
-            ChangeColor();
-        }
+		}
 
-        public override void OnNetworkSpawn()
-        {
-            if (IsOwner)
-            {
-                Move();
-            }
-        }
+		public override void OnNetworkSpawn()
+		{
+			if (IsOwner)
+			{
+				Move();
+				ChangeColor();
+			}
+		}
 
-        public void ChangeColor()
-        {
-            int rdm = Random.Range(0, playerColors.Count);
+		public void ChangeColor()
+		{
+			int rdm = Random.Range(0, playerColors.Count);
 
-            //if (TakenPlayerColors.Value.Count == playerColors.Count)
-            //if (PlayerColors == null || PlayerColors.Value.Count == 0)
-            // { }
+			if (NetworkManager.Singleton.IsServer)
+			{
+				PlayerColor.Value = rdm;
+			}
+			else
+			{
+				SubmitPlayerColorServerRpc(rdm);
+			}
 
-            Debug.Log($"{gameObject.name}.HelloWorldPlayer.ChangeColor");
-            Debug.Log($"\t {playerColors}");
-        }
+			//if (TakenPlayerColors.Value.Count == playerColors.Count)
+			//if (PlayerColors == null || PlayerColors.Value.Count == 0)
+			// { }
 
-        public void Move()
-        {
-            if (NetworkManager.Singleton.IsServer)
-            {
-                var randomPosition = GetRandomPositionOnPlane();
-                transform.position = randomPosition;
-                Position.Value = randomPosition;
+			Debug.Log($"{gameObject.name}.HelloWorldPlayer.ChangeColor");
+			Debug.Log($"\t {playerColors}");
+		}
 
-                Debug.Log($"HelloWorldPlayer.Move");
-            }
-            else
-            {
-                SubmitPositionRequestServerRpc();
-            }
-        }
+		public void Move()
+		{
+			if (NetworkManager.Singleton.IsServer)
+			{
+				var randomPosition = GetRandomPositionOnPlane();
+				transform.position = randomPosition;
+				Position.Value = randomPosition;
 
-        [ServerRpc]
-        void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default)
-        {
-            Position.Value = GetRandomPositionOnPlane();
-        }
+				Debug.Log($"HelloWorldPlayer.Move");
+			}
+			else
+			{
+				SubmitPositionRequestServerRpc();
+			}
+		}
 
-        [ServerRpc]
-        void SetRandomPlayerColorServerRpc(ServerRpcParams rpcParams = default)
-        {
-            Debug.Log($"{gameObject.name}.HelloWorldPlayer.SetRandomPlayerColorServerRpc");
-        }
+		[ServerRpc]
+		void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default)
+		{
+			Position.Value = GetRandomPositionOnPlane();
+		}
 
-        static Vector3 GetRandomPositionOnPlane()
-        {
-            return new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
-        }
+		[ServerRpc]
+		void SubmitPlayerColorServerRpc(int color, ServerRpcParams rpcParams = default)
+		{
+			PlayerColor.Value = color;
 
-        void Update()
-        {
-            transform.position = Position.Value;
-        }
-    }
+			Debug.Log($"{gameObject.name}.HelloWorldPlayer.SubmitPlayerColorServerRpc");
+		}
+
+		static Vector3 GetRandomPositionOnPlane()
+		{
+			return new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
+		}
+
+		void Update()
+		{
+			transform.position = Position.Value;
+			mr.material = playerColors[PlayerColor.Value];
+		}
+	}
 }
