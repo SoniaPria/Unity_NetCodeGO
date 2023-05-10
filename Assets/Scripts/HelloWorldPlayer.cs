@@ -8,10 +8,14 @@ namespace HelloWorld
 	public class HelloWorldPlayer : NetworkBehaviour
 	{
 		public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
+
+		// Variable de red para guardar color de cada player
 		public NetworkVariable<int> PlayerColor;
 
 		[SerializeField]
 		List<Material> playerColors;
+
+		List<int> playerColorsFree;
 
 		MeshRenderer mr;
 
@@ -39,8 +43,16 @@ namespace HelloWorld
 			Debug.Log($"\t IsOwner: {ngo.IsOwner}");
 			Debug.Log($"\t IsOwnedByServer: {ngo.IsOwnedByServer}");
 			// --- end Dev
+
 			mr = GetComponent<MeshRenderer>();
-			ChangeColor();
+
+			playerColorsFree = new List<int>();
+
+			for (int i = 0; i < playerColors.Count; i++)
+			{
+				playerColorsFree.Add(i);
+			}
+
 		}
 
 
@@ -50,6 +62,7 @@ namespace HelloWorld
 			if (IsOwner)
 			{
 				Move();
+				ChangeColor();
 			}
 		}
 
@@ -57,26 +70,18 @@ namespace HelloWorld
 		{
 			Debug.Log($"{gameObject.name}.HelloWorldPlayer.ChangeColor");
 
-			List<int> playerColorsFree = new List<int>();
-
-			for (int i = 0; i < playerColors.Count; i++)
-			{
-				playerColorsFree.Add(i);
-			}
-			// Debug.Log($"\t playerColors: {playerColorsFree}");
-
-
-			int takenColor;
+			// Eliminando colores existentes da lista de índices de colores libres
+			int takenColor = 0;
 			foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
 			{
 				takenColor = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid).GetComponent<HelloWorldPlayer>().PlayerColor.Value;
 
 				playerColorsFree.Remove(takenColor);
+
+				Debug.Log($"\t Eliminado color: {takenColor} como disponible");
 			}
 
-			// Debug.Log($"\t playerColorsFree: {playerColorsFree}");
-
-
+			// Color aleatorio da lista de disponibles
 			int rdmColor = Random.Range(0, playerColorsFree.Count);
 
 			if (NetworkManager.Singleton.IsServer)
@@ -86,8 +91,17 @@ namespace HelloWorld
 			}
 			else
 			{
-				SubmitPlayerColorServerRpc(playerColorsFree[rdmColor]);
+				SubmitPlayerColorServerRpc(rdmColor);
 			}
+		}
+
+		[ServerRpc]
+		void SubmitPlayerColorServerRpc(int index, ServerRpcParams rpcParams = default)
+		{
+			PlayerColor.Value = playerColorsFree[index];
+
+			Debug.Log($"{gameObject.name}.HelloWorldPlayer.SubmitPlayerColorServerRpc");
+			Debug.Log($"\t PlayerColor: {PlayerColor.Value}");
 		}
 
 		public void Move()
@@ -112,15 +126,6 @@ namespace HelloWorld
 			Position.Value = GetRandomPositionOnPlane();
 		}
 
-		[ServerRpc]
-		void SubmitPlayerColorServerRpc(int color, ServerRpcParams rpcParams = default)
-		{
-			PlayerColor.Value = color;
-
-			Debug.Log($"{gameObject.name}.HelloWorldPlayer.SubmitPlayerColorServerRpc");
-			Debug.Log($"\t PlayerColor: {PlayerColor.Value}");
-		}
-
 		static Vector3 GetRandomPositionOnPlane()
 		{
 			return new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
@@ -129,7 +134,14 @@ namespace HelloWorld
 		void Update()
 		{
 			transform.position = Position.Value;
-			mr.material = playerColors[PlayerColor.Value];
+
+			if (mr.material != playerColors[PlayerColor.Value])
+			{
+				// Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
+				// Debug.Log($"\t cambiamos a color: {PlayerColor.Value}");
+
+				mr.material = playerColors[PlayerColor.Value];
+			}
 		}
 	}
 }
