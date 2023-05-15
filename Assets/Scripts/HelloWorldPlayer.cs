@@ -127,14 +127,13 @@ namespace HelloWorld
 
         public void Move()
         {
-            Debug.Log($"{gameObject.name}.HelloWorldPlayer.Move");
-
             if (NetworkManager.Singleton.IsServer)
             {
-                var randomPosition = GetRandomPositionOnPlane();
-                transform.position = randomPosition;
-                Position.Value = randomPosition;
+                Debug.Log($"{gameObject.name}.HelloWorldPlayer.Move in Server");
+
+                Position.Value = GetRandomPositionOnPlane();
             }
+
             else
             {
                 SubmitPositionRequestServerRpc();
@@ -144,6 +143,8 @@ namespace HelloWorld
         [ServerRpc]
         void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default)
         {
+            Debug.Log($"{gameObject.name}.HelloWorldPlayer.Move in ServerRpc");
+
             Position.Value = GetRandomPositionOnPlane();
         }
 
@@ -154,7 +155,11 @@ namespace HelloWorld
 
         void Update()
         {
-            transform.position = Position.Value;
+            if (transform.position != Position.Value)
+            {
+                Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update transform.position");
+                transform.position = Position.Value;
+            }
 
             if (mr.material != playerColors[PlayerColor.Value])
             {
