@@ -95,7 +95,7 @@ namespace HelloWorld
 
         void SetRandomColor()
         {
-            Debug.Log($"{gameObject.name}.HelloWorldPlayer.SetRandomColor");
+            // Debug.Log($"{gameObject.name}.HelloWorldPlayer.SetRandomColor");
 
             // Eliminando colores existentes da lista de índices de colores libres
             int takenColor = 0;
@@ -112,13 +112,14 @@ namespace HelloWorld
                 // Eliminando color asignado da lista de cores libres
                 playerColorsFree.Remove(takenColor);
 
-                Debug.Log($"\t Eliminado color: {takenColor} como disponible");
+                // Debug.Log($"\t Eliminado color: {takenColor} como disponible");
             }
 
             // Índice de cor aleatorio da lista de disponibles
             int rdmColor = Random.Range(0, playerColorsFree.Count);
 
             // Agregar a cor anterior á lista de cores libres
+            // Debug.Log($"\t Agregando color: {PlayerColor.Value} como disponible");
             playerColorsFree.Add(PlayerColor.Value);
 
             // Asignar a nova cor
@@ -129,7 +130,7 @@ namespace HelloWorld
         {
             if (NetworkManager.Singleton.IsServer)
             {
-                Debug.Log($"{gameObject.name}.HelloWorldPlayer.Move in Server");
+                // Debug.Log($"{gameObject.name}.HelloWorldPlayer.Move in Server");
 
                 Position.Value = GetRandomPositionOnPlane();
             }
@@ -143,7 +144,7 @@ namespace HelloWorld
         [ServerRpc]
         void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default)
         {
-            Debug.Log($"{gameObject.name}.HelloWorldPlayer.Move in ServerRpc");
+            // Debug.Log($"{gameObject.name}.HelloWorldPlayer.Move in ServerRpc");
 
             Position.Value = GetRandomPositionOnPlane();
         }
@@ -157,14 +158,13 @@ namespace HelloWorld
         {
             if (transform.position != Position.Value)
             {
-                Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update transform.position");
+                // Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update transform.position");
                 transform.position = Position.Value;
             }
 
-            if (mr.material != playerColors[PlayerColor.Value])
+            if (mr.material.color != playerColors[PlayerColor.Value].color)
             {
-                // Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update");
-                // Debug.Log($"\t cambiamos a color: {PlayerColor.Value}");
+                // Debug.Log($"{gameObject.name}.HelloWorldPlayer.Update Material");
 
                 mr.material = playerColors[PlayerColor.Value];
             }
