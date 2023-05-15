@@ -118,6 +118,9 @@ namespace HelloWorld
             // Índice de cor aleatorio da lista de disponibles
             int rdmColor = Random.Range(0, playerColorsFree.Count);
 
+            // Agregar a cor anterior á lista de cores libres
+            playerColorsFree.Add(PlayerColor.Value);
+
             // Asignar a nova cor
             PlayerColor.Value = playerColorsFree[rdmColor];
         }
