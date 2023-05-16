@@ -57,10 +57,10 @@ namespace HelloWorld
         {
             Debug.Log($"{gameObject.name}.Player.Jump()");
 
-            // Rigidbody rb = GetComponent<Rigidbody>();
-            // rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+            Rigidbody rb = GetComponent<Rigidbody>();
+            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
 
-            SubmitJumpRequestServerRpc();
+            // SubmitJumpRequestServerRpc();
         }
 
         bool IsJumping()
@@ -92,10 +92,10 @@ namespace HelloWorld
             // Salto enviado por Input de Player
             // Rigidbody.Physics NON se propaga en rede sen Network variable
 
-            Rigidbody rb = GetComponent<Rigidbody>();
-            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+            // Rigidbody rb = GetComponent<Rigidbody>();
+            // rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
 
-            // Jump();
+            Jump();
         }
 
         void Update()
