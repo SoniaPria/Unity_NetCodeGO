@@ -49,14 +49,14 @@ namespace HelloWorld
                     {
                         NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid)
                             .GetComponent<Player>()
-                            .Move();
+                            .Jump();
                     }
                 }
                 else
                 {
                     var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
                     var player = playerObject.GetComponent<Player>();
-                    player.Move();
+                    player.Jump();
                 }
             }
         }

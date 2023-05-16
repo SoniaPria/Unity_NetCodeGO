@@ -5,7 +5,12 @@ namespace HelloWorld
 {
     public class Player : NetworkBehaviour
     {
-        void Start() { }
+        float jumpForce;
+
+        void Start()
+        {
+            jumpForce = 6f;
+        }
 
         public override void OnNetworkSpawn()
         {
@@ -13,7 +18,8 @@ namespace HelloWorld
 
             if (IsOwner)
             {
-                Move();
+                // Para que non se espaneen no mesmo punto
+                InitRandomPosition();
             }
         }
 
@@ -43,15 +49,26 @@ namespace HelloWorld
             // --- end Dev
         }
 
-        public void Move()
+        void InitRandomPosition()
         {
-            SubmitPositionRequestServerRpc();
+            SubmitRandomPositionRequestServerRpc();
+        }
+        public void Jump()
+        {
+            SubmitJumpRequestServerRpc();
         }
 
+        [ServerRpc]
+        void SubmitRandomPositionRequestServerRpc(ServerRpcParams rpcParams = default)
+        {
+            // Posición aleatoria no taboleiro
+            transform.position = new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
+        }
 
         [ServerRpc]
         void SubmitInputPositionRequestServerRpc(Vector3 direction, ServerRpcParams rpcParams = default)
         {
+            // Posición enviada por Input de Player
             transform.position += direction;
 
             // Debug.Log($"{gameObject.name}.Player.SubmitInputPositionRequestServerRpc({direction})");
@@ -60,51 +77,56 @@ namespace HelloWorld
 
 
         [ServerRpc]
-        void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default)
+        void SubmitJumpRequestServerRpc(ServerRpcParams rpcParams = default)
         {
-            transform.position = GetRandomPositionOnPlane();
-        }
-
-        static Vector3 GetRandomPositionOnPlane()
-        {
-            return new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
+            // Salto
+            Rigidbody rb = GetComponent<Rigidbody>();
+            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         }
 
         void Update()
         {
-            if (IsOwner)
+            if (!IsOwner) { return; }
+
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
             {
-                if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
-                {
-                    // Debug.Log($"{gameObject.name}.Player.Update");
-                    // Debug.Log($"\t Input W | Input Up arrow");
+                // Debug.Log($"{gameObject.name}.Player.Update");
+                // Debug.Log($"\t Input W | Input Up arrow");
 
-                    SubmitInputPositionRequestServerRpc(Vector3.forward);
-                }
+                SubmitInputPositionRequestServerRpc(Vector3.forward);
+            }
 
-                if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
-                {
-                    // Debug.Log($"{gameObject.name}.Player.Update");
-                    // Debug.Log($"\t Input D | Input Right arrow");
+            if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                // Debug.Log($"{gameObject.name}.Player.Update");
+                // Debug.Log($"\t Input D | Input Right arrow");
 
-                    SubmitInputPositionRequestServerRpc(Vector3.right);
-                }
+                SubmitInputPositionRequestServerRpc(Vector3.right);
+            }
 
-                if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-                {
-                    // Debug.Log($"{gameObject.name}.Player.Update");
-                    // Debug.Log($"\t Input S | Input Down arrow");
+            if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                // Debug.Log($"{gameObject.name}.Player.Update");
+                // Debug.Log($"\t Input S | Input Down arrow");
 
-                    SubmitInputPositionRequestServerRpc(Vector3.back);
-                }
+                SubmitInputPositionRequestServerRpc(Vector3.back);
+            }
 
-                if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-                {
-                    // Debug.Log($"{gameObject.name}.Player.Update");
-                    // Debug.Log($"\t Input A | Input Left arrow");
+            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                // Debug.Log($"{gameObject.name}.Player.Update");
+                // Debug.Log($"\t Input A | Input Left arrow");
 
-                    SubmitInputPositionRequestServerRpc(Vector3.left);
-                }
+                SubmitInputPositionRequestServerRpc(Vector3.left);
+
+            }
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                // Debug.Log($"{gameObject.name}.Player.Update");
+                // Debug.Log($"\t Input Jump");
+
+                SubmitJumpRequestServerRpc();
             }
         }
     }
