@@ -15,8 +15,7 @@ namespace HelloWorld
             else
             {
                 StatusLabels();
-
-                SubmitNewPosition();
+                SubmitJump();
             }
 
             GUILayout.EndArea();
@@ -39,9 +38,9 @@ namespace HelloWorld
             GUILayout.Label("Mode: " + mode);
         }
 
-        static void SubmitNewPosition()
+        static void SubmitJump()
         {
-            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Move" : "Request Position Change"))
+            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Everyone jumps" : "I jump"))
             {
                 if (NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient)
                 {

@@ -55,13 +55,24 @@ namespace HelloWorld
         }
         public void Jump()
         {
+            Debug.Log($"{gameObject.name}.Player.Jump()");
+
+            // Rigidbody rb = GetComponent<Rigidbody>();
+            // rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+
             SubmitJumpRequestServerRpc();
+        }
+
+        bool IsJumping()
+        {
+            return transform.position.y > 1.05f;
         }
 
         [ServerRpc]
         void SubmitRandomPositionRequestServerRpc(ServerRpcParams rpcParams = default)
         {
             // Posición aleatoria no taboleiro
+            // Transform se propaga en rede sen Network variable
             transform.position = new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
         }
 
@@ -69,19 +80,22 @@ namespace HelloWorld
         void SubmitInputPositionRequestServerRpc(Vector3 direction, ServerRpcParams rpcParams = default)
         {
             // Posición enviada por Input de Player
+            // Transform se propaga en rede sen Network variable
             transform.position += direction;
-
-            // Debug.Log($"{gameObject.name}.Player.SubmitInputPositionRequestServerRpc({direction})");
-            // Debug.Log($"\t new.position: {transform.position}");
         }
-
 
         [ServerRpc]
         void SubmitJumpRequestServerRpc(ServerRpcParams rpcParams = default)
         {
-            // Salto
+            Debug.Log($"{gameObject.name}.Player.SubmitJumpPositionRequestServerRpc()");
+
+            // Salto enviado por Input de Player
+            // Rigidbody.Physics NON se propaga en rede sen Network variable
+
             Rigidbody rb = GetComponent<Rigidbody>();
             rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+
+            // Jump();
         }
 
         void Update()
@@ -121,7 +135,7 @@ namespace HelloWorld
 
             }
 
-            if (Input.GetButtonDown("Jump"))
+            if (Input.GetButtonDown("Jump") && !IsJumping())
             {
                 // Debug.Log($"{gameObject.name}.Player.Update");
                 // Debug.Log($"\t Input Jump");
