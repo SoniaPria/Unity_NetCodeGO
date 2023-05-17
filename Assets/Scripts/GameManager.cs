@@ -15,7 +15,6 @@ namespace HelloWorld
             else
             {
                 StatusLabels();
-                SubmitJump();
             }
 
             GUILayout.EndArea();
@@ -36,28 +35,6 @@ namespace HelloWorld
             GUILayout.Label("Transport: " +
                 NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetType().Name);
             GUILayout.Label("Mode: " + mode);
-        }
-
-        static void SubmitJump()
-        {
-            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Everyone jumps" : "I jump"))
-            {
-                if (NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient)
-                {
-                    foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
-                    {
-                        NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid)
-                            .GetComponent<Player>()
-                            .Jump();
-                    }
-                }
-                else
-                {
-                    var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
-                    var player = playerObject.GetComponent<Player>();
-                    player.Jump();
-                }
-            }
         }
     }
 }
