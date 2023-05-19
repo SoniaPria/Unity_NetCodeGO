@@ -1,15 +1,17 @@
 # Unity NetCode for GameObjects
 
-## Práctica 4.- Network transform e código eficiente
+## Práctica 5.- Vantaxes para os players
 
 ### Requisitos
 
-1. Main project segundo o Manual de Unity: [Get started with NGO](https://docs-multiplayer.unity3d.com/netcode/current/tutorials/get-started-ngo)
-2. Utilizar NetworkTransform para todas as instancias de _Player_ para esta práctica.
-3. Que todo o código sexa eficiente e teña un propósito, eliminando as liñas redundantes.
+1. Partir da práctica 4
+2. Usar ClientRpc
 
 ### Obxectivo
 
-Crea un xogo multixogador no que os xogadores poidan moverse sobre o plano (arriba, abaixo, esquerda e dereita) e que poidan saltar (ou semellante). Faino usando o Network transform.
+Os players van recibir de forma aleatoria e por tempo limitado unha vantaxe ou desvantaxe.
 
-Fai que o código sexa o máis eficiente posible, sen partes que sobren, sen código redundante ou sen partes que non se usen nunca. Podes asumir que o código se vai executar sempre con Host e nunca con server.
+- A vantaxe é que o movmento é máis rápido e pode verse porque o player se pon de cor verde,
+- a desvantaxe ao contrario, o player ponse vermello ou laranxa e vai máis lento.
+
+Por exemplo, pasados 20 seguntos o player 2 recibe unha vantaxe, ponse verde e vai máis rápido por 10 segundos.
