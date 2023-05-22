@@ -10,6 +10,7 @@ public class GameManager : NetworkBehaviour
     // Propiedades públicas para establecer os límites do taboleiros
     public int minX, maxX, minY, minZ, maxZ;
 
+    // WaitForSeconds da corrutina
     float timeRandom, timePower;
 
     void OnEnable()
@@ -58,10 +59,9 @@ public class GameManager : NetworkBehaviour
             // Os cambios duran 10s
             yield return new WaitForSeconds(timePower);
 
-            // O netPlayer recupera as propiedades de orixe
+            // O netPlayer recupera as propiedades de orixe despois do Wait
             rdmPlayer.ResetBoonBaneClientRpc();
         }
-
     }
 
 

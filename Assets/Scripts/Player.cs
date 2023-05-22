@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -5,27 +7,33 @@ public class Player : NetworkBehaviour
 {
     NetworkVariable<int> StartingLine = new NetworkVariable<int>();
 
-    float jumpForce, period;
-    float initPeriod, boonPeriod, banePeriod;
+    // Lista de cores: 0: LemonYellow, 1: Green, 2: Red
+    [SerializeField]
+    List<Material> playerColors;
+
+    // Compoñente MeshRenderes do GameObject
+    MeshRenderer mr;
+
+    // float jumpForce, period;
+    float period, initPeriod, boonPeriod, banePeriod;
+
 
     public override void OnNetworkSpawn()
     {
-        DevInfoNetworkObject();
+        period = 4.5f;
+        initPeriod = period;
+        boonPeriod = 2f;
+        banePeriod = 8f;
+
+        mr = GetComponent<MeshRenderer>();
+
+        // Default material
+        mr.material = playerColors[0];
 
         if (IsOwner)
         {
             Initialize();
         }
-
-        else
-        {
-            // Valores das instancias de players no equipo cliente
-            Debug.Log($"{gameObject.name}.OnNetworkSpawn() IsOwner {IsOwner}");
-        }
-    }
-
-    public override void OnNetworkDespawn()
-    {
     }
 
     void Initialize()
@@ -35,56 +43,8 @@ public class Player : NetworkBehaviour
         // nun carril de carreira aleatorio entre os que non están ocupados
 
         SetStartingLinePositionServerRpc();
-
-        jumpForce = 6f;
-        period = 4.5f;
-        initPeriod = period;
-        boonPeriod = 2f;
-        banePeriod = 8f;
-
-        Debug.Log($"{gameObject.name}.OnNetworkSpawn() IsOwner {IsOwner}");
     }
 
-    void DevInfoNetworkObject()
-    {
-        // Dev
-        var ngo = GetComponent<NetworkObject>();
-        string uid = ngo.NetworkObjectId.ToString();
-
-        if (ngo.IsOwnedByServer)
-        {
-            gameObject.name = $"HostPlayer_{uid}";
-        }
-        else if (ngo.IsOwner)
-        {
-            gameObject.name = $"LocalPlayer_{uid}";
-        }
-        else
-        {
-            gameObject.name = "Net_Player_" + uid;
-        }
-
-        Debug.Log($"{gameObject.name}.Player");
-        Debug.Log($"\t IsLocalPlayer: {ngo.IsLocalPlayer}");
-        Debug.Log($"\t IsOwner: {ngo.IsOwner}");
-        Debug.Log($"\t IsOwnedByServer: {ngo.IsOwnedByServer}");
-        // --- end Dev
-    }
-
-    public Vector3 GetPosition()
-    {
-        return transform.position;
-    }
-
-    bool IsJumping()
-    {
-        return transform.position.y > 1.05f;
-    }
-
-    Vector3 GetRandomPosition2D()
-    {
-        return new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
-    }
 
     float MobileSmoothStep(float seconds)
     {
@@ -96,8 +56,6 @@ public class Player : NetworkBehaviour
         // @return float entre min y max
 
         float myClamp = Mathf.Clamp(value, min, max);
-
-        // Debug.Log($"{gameObject.name}. Clamp {myClamp}");
 
         // public static float SmoothStep(float from, float to, float t);
         // Interpolado entre from y to, con suavizado en los límites.
@@ -114,7 +72,6 @@ public class Player : NetworkBehaviour
 
     // Método propio PingPong normalizado a lenght 1 (período 1) 
     // @return float [0 - 1]
-
     float MobilePingPong(float seconds)
     {
         // PingPong precisa que t sea un valor autoincremental, p.ej., Time.time o Time.unscaledTime.
@@ -127,12 +84,11 @@ public class Player : NetworkBehaviour
 
         float myPingPong = Mathf.PingPong(t, lenght);
 
-        // Debug.Log($"{gameObject.name}.PingPong {myPingPong}");
-
         return myPingPong;
     }
 
 
+    // Retorna un carril libre para o player corredor infinito entre os dispoñibles
     int GetFreeStartingAxis()
     {
         int playerPosition, freePosition;
@@ -144,8 +100,6 @@ public class Player : NetworkBehaviour
         do
         {
             freePosition = Random.Range(minX, maxX);
-
-            // Debug.Log($"{gameObject.name}.GetFreeStartLinePosition RANDOM VALUE {freePosition}");
 
             foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
             {
@@ -163,11 +117,10 @@ public class Player : NetworkBehaviour
         }
         while (!isFree);
 
-        // Debug.Log($"{gameObject.name}.GetFreeStartLinePosition @return {freePosition}");
-
         return freePosition;
     }
 
+    // Posición 3D inicial do corredor infinito
     Vector3 GetStartPointPosition()
     {
         // Situar al player en el punto de salida de su carril
@@ -178,6 +131,7 @@ public class Player : NetworkBehaviour
         return new Vector3(x, y, z);
     }
 
+    // Posición 3D final do corredor infinito
     Vector3 GetEndPointPosition()
     {
         // Situar al player en el punto de salida de su carril
@@ -188,35 +142,35 @@ public class Player : NetworkBehaviour
         return new Vector3(x, y, z);
     }
 
+    // Arroutadas do server
+    // Aleatoriamente establece unha des/vantase de velocidade
+    // e se distingue pola cor do Mesh do netPlayer
+
     [ClientRpc]
     public void SetBoonBaneClientRpc(bool isBoon, ClientRpcParams clientRpcParams = default)
     {
         if (isBoon)
         {
             period = boonPeriod;
+            mr.material = playerColors[1];
         }
 
         else
         {
             period = banePeriod;
+            mr.material = playerColors[2];
         }
     }
+
+    // Restablecimento dos valores normais de Play
 
     [ClientRpc]
     public void ResetBoonBaneClientRpc(ClientRpcParams clientRpcParams = default)
     {
         period = initPeriod;
+        mr.material = playerColors[0];
     }
 
-
-
-    [ServerRpc]
-    public void TestServerRpc(ServerRpcParams serverRpcParams = default)
-    {
-        var clientId = serverRpcParams.Receive.SenderClientId;
-
-        Debug.Log($"{gameObject.name}.TestServerRpc client ID {clientId}");
-    }
 
 
     [ServerRpc]
@@ -243,14 +197,6 @@ public class Player : NetworkBehaviour
         transform.position += direction;
     }
 
-    [ServerRpc]
-    void JumpServerRpc(ServerRpcParams rpcParams = default)
-    {
-        Rigidbody rb = GetComponent<Rigidbody>();
-        rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
-    }
-
-
     // Mediante Vector3.Lerp y SmoothStep, obténse un movimento infinito entre
     // startPoint y endPoint, tardando period segundos en ida e volta
     [ServerRpc]
@@ -272,10 +218,7 @@ public class Player : NetworkBehaviour
 
     void Update()
     {
-        if (!IsOwner)
-        {
-            return;
-        }
+        if (!IsOwner) { return; }
 
         // Movimento infinito entre 2 puntos de forma suavizada en 'period' segundos
         if (period != 0f)
