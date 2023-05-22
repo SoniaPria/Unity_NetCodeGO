@@ -5,7 +5,7 @@ public class Player : NetworkBehaviour
 {
     NetworkVariable<int> StartingLine = new NetworkVariable<int>();
 
-    float jumpForce;
+    float jumpForce, period;
 
     public override void OnNetworkSpawn()
     {
@@ -36,6 +36,7 @@ public class Player : NetworkBehaviour
         SetStartingLinePositionServerRpc();
 
         jumpForce = 6f;
+        period = 4.5f;
 
         Debug.Log($"{gameObject.name}.OnNetworkSpawn() IsOwner {IsOwner}");
     }
@@ -81,27 +82,64 @@ public class Player : NetworkBehaviour
         return new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
     }
 
-    // Vector3 GetStartingLinePosition()
-    // {
-    //     // Buscar un carril libre
-    //     StartingLine.Value = GetFreeStartingAxis();
+    float MobileSmoothStep(float seconds)
+    {
+        float value = MobilePingPong(seconds);
+        float min = 0f;
+        float max = 1f;
 
-    //     // Situar ao player no punto de inicio do seu carril
-    //     float x = (float)StartingLine.Value;
-    //     float y = 1f;
-    //     float z = 4f;
+        // public static float Clamp(float value, float min, float max);
+        // @return float entre min y max
 
-    //     return new Vector3(x, y, z);
-    // }
+        float myClamp = Mathf.Clamp(value, min, max);
+
+        // Debug.Log($"{gameObject.name}. Clamp {myClamp}");
+
+        // public static float SmoothStep(float from, float to, float t);
+        // Interpolado entre from y to, con suavizado en los límites.
+
+        float from = 0f;
+        float to = 1f;
+        float t = myClamp;
+
+        float mySmoothStep = Mathf.SmoothStep(from, to, t);
+
+        return mySmoothStep;
+    }
+
+
+    // Método propio PingPong normalizado a lenght 1 (período 1) 
+    // @return float [0 - 1]
+
+    float MobilePingPong(float seconds)
+    {
+        // PingPong precisa que t sea un valor autoincremental, p.ej., Time.time o Time.unscaledTime.
+        // @return float [0 - lenght]
+
+        // public static float PingPong(float t, float length = 2f);
+
+        float t = seconds * 2;
+        float lenght = 1f;
+
+        float myPingPong = Mathf.PingPong(t, lenght);
+
+        // Debug.Log($"{gameObject.name}.PingPong {myPingPong}");
+
+        return myPingPong;
+    }
+
 
     int GetFreeStartingAxis()
     {
         int playerPosition, freePosition;
         bool isFree = true;
 
+        int minX = GameManager.instance.minX;
+        int maxX = GameManager.instance.maxX;
+
         do
         {
-            freePosition = Random.Range(-4, 4);
+            freePosition = Random.Range(minX, maxX);
 
             // Debug.Log($"{gameObject.name}.GetFreeStartLinePosition RANDOM VALUE {freePosition}");
 
@@ -126,6 +164,25 @@ public class Player : NetworkBehaviour
         return freePosition;
     }
 
+    Vector3 GetStartPointPosition()
+    {
+        // Situar al player en el punto de salida de su carril
+        float x = (float)StartingLine.Value;
+        float y = (float)GameManager.instance.minY;
+        float z = (float)GameManager.instance.minZ;
+
+        return new Vector3(x, y, z);
+    }
+
+    Vector3 GetEndPointPosition()
+    {
+        // Situar al player en el punto de salida de su carril
+        float x = (float)StartingLine.Value;
+        float y = (float)GameManager.instance.minY;
+        float z = (float)GameManager.instance.maxZ;
+
+        return new Vector3(x, y, z);
+    }
 
 
 
@@ -146,8 +203,8 @@ public class Player : NetworkBehaviour
 
         // Situar al player en el punto de salida de su carril
         float x = (float)StartingLine.Value;
-        float y = 1f;
-        float z = 4f;
+        float y = (float)GameManager.instance.minY;
+        float z = (float)GameManager.instance.minZ;
 
         Vector3 position = new Vector3(x, y, z);
 
@@ -169,6 +226,26 @@ public class Player : NetworkBehaviour
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
     }
 
+
+    // Mediante Vector3.Lerp y SmoothStep, obténse un movimento infinito entre
+    // startPoint y endPoint, tardando period segundos en ida e volta
+    [ServerRpc]
+    void SmoothLinearMovementServerRpc(float period, ServerRpcParams rpcParams = default)
+    {
+        // public static Vector3 Lerp(Vector3 a, Vector3 b, float t);
+        // @return Vector3 Interpolated value, equals to a + (b - a) * t.
+
+        // Cuando t= 1, Vector3.Lerp(a, b, t) devuelve a.
+        // Cuando t= 1, Vector3.Lerp(a, b, t) devuelve b.
+        // Cuando t= 0,5, Vector3.Lerp(a, b, t) devuelve el punto medio entre ay b.
+
+        Vector3 a = GetStartPointPosition();
+        Vector3 b = GetEndPointPosition();
+
+        float t = MobileSmoothStep(Time.time / period);
+        transform.position = Vector3.Lerp(a, b, t);
+    }
+
     void Update()
     {
         if (!IsOwner)
@@ -176,29 +253,10 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+        // Movimento infinito entre 2 puntos de forma suavizada en 'period' segundos
+        if (period != 0f)
         {
-            MoveServerRpc(Vector3.forward);
-        }
-
-        if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            MoveServerRpc(Vector3.right);
-        }
-
-        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            MoveServerRpc(Vector3.back);
-        }
-
-        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            MoveServerRpc(Vector3.left);
-        }
-
-        if (Input.GetButtonDown("Jump") && !IsJumping())
-        {
-            JumpServerRpc();
+            SmoothLinearMovementServerRpc(period);
         }
     }
 }
