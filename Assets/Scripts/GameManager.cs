@@ -1,8 +1,41 @@
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
+    public static GameManager instance;
+
+    public int minX, maxX, minY, minZ, maxZ;
+
+    List<NetworkClient> netPlayers;
+
+    float timeRandom, timePower;
+
+    void OnEnable()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(this);
+        }
+        instance = this;
+
+        // Medidas do taboleiro
+        minX = -4;
+        maxX = 4;
+        minY = 1;
+        minZ = 4;
+        maxZ = -4;
+
+        // Tempos de spaneo e des/vantaxes
+        timeRandom = 20f;
+        timePower = 10f;
+    }
+
+
+
+
     void OnGUI()
     {
         GUILayout.BeginArea(new Rect(10, 10, 300, 300));
