@@ -6,6 +6,7 @@ public class Player : NetworkBehaviour
     NetworkVariable<int> StartingLine = new NetworkVariable<int>();
 
     float jumpForce, period;
+    float initPeriod, boonPeriod, banePeriod;
 
     public override void OnNetworkSpawn()
     {
@@ -37,6 +38,9 @@ public class Player : NetworkBehaviour
 
         jumpForce = 6f;
         period = 4.5f;
+        initPeriod = period;
+        boonPeriod = 2f;
+        banePeriod = 8f;
 
         Debug.Log($"{gameObject.name}.OnNetworkSpawn() IsOwner {IsOwner}");
     }
@@ -182,6 +186,26 @@ public class Player : NetworkBehaviour
         float z = (float)GameManager.instance.maxZ;
 
         return new Vector3(x, y, z);
+    }
+
+    [ClientRpc]
+    public void SetBoonBaneClientRpc(bool isBoon, ClientRpcParams clientRpcParams = default)
+    {
+        if (isBoon)
+        {
+            period = boonPeriod;
+        }
+
+        else
+        {
+            period = banePeriod;
+        }
+    }
+
+    [ClientRpc]
+    public void ResetBoonBaneClientRpc(ClientRpcParams clientRpcParams = default)
+    {
+        period = initPeriod;
     }
 
 
