@@ -11,12 +11,14 @@ public class Player : NetworkBehaviour
     [SerializeField]
     List<Material> playerColors;
 
+
     // Compoñente MeshRenderes do GameObject
     MeshRenderer mr;
 
     // float jumpForce, period;
     float period, initPeriod, boonPeriod, banePeriod;
 
+    float jumpForce;
 
     public override void OnNetworkSpawn()
     {
@@ -24,6 +26,7 @@ public class Player : NetworkBehaviour
         initPeriod = period;
         boonPeriod = 2f;
         banePeriod = 8f;
+        jumpForce = 6f;
 
         mr = GetComponent<MeshRenderer>();
 
@@ -125,7 +128,7 @@ public class Player : NetworkBehaviour
     {
         // Situar al player en el punto de salida de su carril
         float x = (float)StartingLine.Value;
-        float y = (float)GameManager.instance.minY;
+        float y = transform.position.y;
         float z = (float)GameManager.instance.minZ;
 
         return new Vector3(x, y, z);
@@ -136,7 +139,7 @@ public class Player : NetworkBehaviour
     {
         // Situar al player en el punto de salida de su carril
         float x = (float)StartingLine.Value;
-        float y = (float)GameManager.instance.minY;
+        float y = transform.position.y;
         float z = (float)GameManager.instance.maxZ;
 
         return new Vector3(x, y, z);
@@ -215,6 +218,12 @@ public class Player : NetworkBehaviour
         float t = MobileSmoothStep(Time.time / period);
         transform.position = Vector3.Lerp(a, b, t);
     }
+    [ServerRpc]
+    void JumpServerRpc(ServerRpcParams rpcParams = default)
+    {
+        Rigidbody rb = GetComponent<Rigidbody>();
+        rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+    }
 
     void Update()
     {
@@ -224,6 +233,14 @@ public class Player : NetworkBehaviour
         if (period != 0f)
         {
             SmoothLinearMovementServerRpc(period);
+        }
+
+        if (Input.GetButtonDown("Jump"))
+        {
+            Debug.Log($"{gameObject.name}.Jump()");
+            JumpServerRpc();
+            // gameObject.GetComponent<Rigidbody>().AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
         }
     }
 }
